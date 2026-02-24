@@ -1,6 +1,34 @@
 #!/bin/bash
 set -e
 
+SSL_DIR="/etc/nginx/ssl"
+SSL_CERT_PATH="${SSL_DIR}/server.crt"
+SSL_KEY_PATH="${SSL_DIR}/server.key"
+
+# ── Provision TLS certificate ──
+mkdir -p "$SSL_DIR"
+
+if [ -n "$SSL_CERT" ] && [ -n "$SSL_KEY" ]; then
+    echo "Using SSL cert/key from environment variables"
+    echo "$SSL_CERT" > "$SSL_CERT_PATH"
+    echo "$SSL_KEY" > "$SSL_KEY_PATH"
+elif [ -n "$SSL_CERT_FILE" ] && [ -n "$SSL_KEY_FILE" ] && [ -f "$SSL_CERT_FILE" ] && [ -f "$SSL_KEY_FILE" ]; then
+    echo "Using SSL cert/key from files: ${SSL_CERT_FILE}, ${SSL_KEY_FILE}"
+    cp "$SSL_CERT_FILE" "$SSL_CERT_PATH"
+    cp "$SSL_KEY_FILE" "$SSL_KEY_PATH"
+else
+    echo "No SSL cert provided — generating self-signed certificate..."
+    openssl req -x509 -nodes -days 3650 -newkey rsa:4096 \
+        -keyout "$SSL_KEY_PATH" \
+        -out "$SSL_CERT_PATH" \
+        -subj "/CN=glm5-runpod" 2>/dev/null
+    echo "===== SELF-SIGNED PUBLIC CERTIFICATE ====="
+    cat "$SSL_CERT_PATH"
+    echo "==========================================="
+fi
+chmod 600 "$SSL_KEY_PATH"
+chmod 644 "$SSL_CERT_PATH"
+
 # ── Configuration (all overridable via environment variables) ──
 QUANT="${QUANT:-UD-IQ2_XXS}"
 CTX_SIZE="${CTX_SIZE:-202752}"
@@ -36,11 +64,15 @@ echo "  Threads:    ${THREADS}"
 echo "  Tools:      ${TOOLS_ENABLED:-false}"
 echo "========================="
 
+# ── Start nginx TLS proxy ──
+nginx
+echo "nginx started on :443"
+
 # ── Start llama-server (downloads the model automatically via -hf) ──
 exec ./llama.cpp/llama-server \
     -hf "unsloth/GLM-5-GGUF:${QUANT}" \
     --alias "unsloth/GLM-5" \
-    --host 0.0.0.0 \
+    --host 127.0.0.1 \
     --port "$PORT" \
     --prio 3 \
     --temp "$TEMP" \
