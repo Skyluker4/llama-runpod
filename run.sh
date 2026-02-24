@@ -7,6 +7,7 @@ CTX_SIZE="${CTX_SIZE:-202752}"
 MIN_P="${MIN_P:-0.01}"
 PORT="${PORT:-8001}"
 GPU_LAYERS="${GPU_LAYERS:-99}"
+THREADS="${THREADS:-$(nproc)}"
 
 # ── Set temp / top-p based on TOOLS_ENABLED ──
 if [ "$TOOLS_ENABLED" = "true" ]; then
@@ -31,6 +32,7 @@ echo "  Top-P:      ${TOP_P}"
 echo "  Min-P:      ${MIN_P}"
 echo "  GPU Layers: ${GPU_LAYERS}"
 echo "  Port:       ${PORT}"
+echo "  Threads:    ${THREADS}"
 echo "  Tools:      ${TOOLS_ENABLED:-false}"
 echo "========================="
 
@@ -46,5 +48,6 @@ exec ./llama.cpp/llama-server \
     --min-p "$MIN_P" \
     --ctx-size "$CTX_SIZE" \
     --n-gpu-layers "$GPU_LAYERS" \
+    --threads "$THREADS" \
     --flash-attn \
     $EXTRA_ARGS
