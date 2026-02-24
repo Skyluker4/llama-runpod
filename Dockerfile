@@ -13,6 +13,8 @@ RUN apt-get update && \
     rm -rf llama.cpp/build && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
+EXPOSE 8001
+
 HEALTHCHECK --interval=30s --timeout=5s --start-period=600s --retries=3 \
     CMD curl -f http://localhost:${PORT:-8001}/health || exit 1
 
