@@ -13,7 +13,6 @@ RUN apt-get update && \
     rm -rf llama.cpp/build && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
-COPY run.sh /run.sh
-RUN chmod +x /run.sh
+COPY --chmod=0755 run.sh /run.sh
 
 CMD ["/run.sh"]
