@@ -3,7 +3,7 @@ set -e
 
 # ── Configuration (all overridable via environment variables) ──
 QUANT="${QUANT:-UD-IQ2_XXS}"
-CTX_SIZE="${CTX_SIZE:-16384}"
+CTX_SIZE="${CTX_SIZE:-202752}"
 MIN_P="${MIN_P:-0.01}"
 PORT="${PORT:-8001}"
 GPU_LAYERS="${GPU_LAYERS:-99}"
