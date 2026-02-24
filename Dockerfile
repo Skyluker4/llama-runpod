@@ -2,7 +2,6 @@ FROM runpod/pytorch:1.0.2-cu1281-torch280-ubuntu2404
 
 ENV LLAMA_CACHE="/workspace/unsloth/GLM-5-GGUF"
 ENV TOOLS_ENABLED=false
-ENV HF_HUB_ENABLE_HF_TRANSFER=1
 
 # Build llama.cpp with CUDA support
 RUN apt-get update && \
@@ -13,9 +12,6 @@ RUN apt-get update && \
     cp llama.cpp/build/bin/llama-* llama.cpp && \
     rm -rf llama.cpp/build && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
-
-# Install huggingface_hub for model downloads
-RUN pip install -U huggingface_hub hf_transfer
 
 COPY run.sh /run.sh
 RUN chmod +x /run.sh

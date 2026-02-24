@@ -2,21 +2,11 @@
 set -e
 
 # ── Configuration (all overridable via environment variables) ──
-MODEL_DIR="${LLAMA_CACHE:-unsloth/GLM-5-GGUF}"
 QUANT="${QUANT:-UD-IQ2_XXS}"
-MODEL_FILE="${MODEL_DIR}/${QUANT}/GLM-5-${QUANT}-00001-of-00006.gguf"
 CTX_SIZE="${CTX_SIZE:-16384}"
 MIN_P="${MIN_P:-0.01}"
 PORT="${PORT:-8001}"
 GPU_LAYERS="${GPU_LAYERS:-99}"
-
-# ── Download model if not already present ──
-if [ ! -f "$MODEL_FILE" ]; then
-    echo "Model not found at ${MODEL_FILE}, downloading ${QUANT}..."
-    huggingface-cli download unsloth/GLM-5-GGUF \
-        --local-dir "$MODEL_DIR" \
-        --include "*${QUANT}*"
-fi
 
 # ── Set temp / top-p based on TOOLS_ENABLED ──
 if [ "$TOOLS_ENABLED" = "true" ]; then
@@ -34,7 +24,7 @@ if [ -n "$API_KEY" ]; then
 fi
 
 echo "===== GLM-5 RunPod ====="
-echo "  Model:      ${MODEL_FILE}"
+echo "  Quant:      ${QUANT}"
 echo "  Context:    ${CTX_SIZE}"
 echo "  Temp:       ${TEMP}"
 echo "  Top-P:      ${TOP_P}"
@@ -44,9 +34,9 @@ echo "  Port:       ${PORT}"
 echo "  Tools:      ${TOOLS_ENABLED:-false}"
 echo "========================="
 
-# ── Start llama-server ──
+# ── Start llama-server (downloads the model automatically via -hf) ──
 exec ./llama.cpp/llama-server \
-    --model "$MODEL_FILE" \
+    -hf "unsloth/GLM-5-GGUF:${QUANT}" \
     --alias "unsloth/GLM-5" \
     --host 0.0.0.0 \
     --port "$PORT" \
