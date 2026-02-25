@@ -81,5 +81,5 @@ exec ./llama.cpp/llama-server \
     --ctx-size "$CTX_SIZE" \
     --n-gpu-layers "$GPU_LAYERS" \
     --threads "$THREADS" \
-    --flash-attn \
+    --flash-attn on \
     $EXTRA_ARGS
