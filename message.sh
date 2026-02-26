@@ -1,6 +1,6 @@
 #!/bin/sh
 
-HOSTNAME="glm5-runpod"
+HOSTNAME="llama-runpod"
 
 # Detect if first arg is an IP (contains a dot)
 if [ $# -ge 3 ] && echo "$1" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$'; then

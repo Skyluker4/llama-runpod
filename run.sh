@@ -25,7 +25,7 @@ else
     openssl req -x509 -nodes -days 3650 -newkey rsa:4096 \
         -keyout "$SSL_KEY_PATH" \
         -out "$SSL_CERT_PATH" \
-        -subj "/CN=glm5-runpod" 2>/dev/null
+        -subj "/CN=llama-runpod" 2>/dev/null
     echo "===== SELF-SIGNED PUBLIC CERTIFICATE ====="
     cat "$SSL_CERT_PATH"
     echo "==========================================="
