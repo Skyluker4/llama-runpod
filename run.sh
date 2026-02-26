@@ -47,7 +47,14 @@ else
     TOP_P="${TOP_P:-1.0}"
 fi
 
-# ── Optional API key ──
+# ── API key ──
+if [ -z "$API_KEY" ] && [ "$GENERATE_API_KEY" = "true" ]; then
+    API_KEY=$(head -c 48 /dev/urandom | base64 | tr -d '/+=' | head -c 48)
+    echo "===== GENERATED API KEY ====="
+    echo "  $API_KEY"
+    echo "============================="
+fi
+
 EXTRA_ARGS=""
 if [ -n "$API_KEY" ]; then
     EXTRA_ARGS="--api-key ${API_KEY}"
