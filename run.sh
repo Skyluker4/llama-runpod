@@ -1,6 +1,7 @@
 #!/bin/bash
 set -e
 
+ALLOW_HTTP="${ALLOW_HTTP:-false}"
 SSL_DIR="/etc/nginx/ssl"
 SSL_CERT_PATH="${SSL_DIR}/server.crt"
 SSL_KEY_PATH="${SSL_DIR}/server.key"
@@ -62,7 +63,17 @@ echo "  GPU Layers: ${GPU_LAYERS}"
 echo "  Port:       ${PORT}"
 echo "  Threads:    ${THREADS}"
 echo "  Tools:      ${TOOLS_ENABLED:-false}"
+echo "  Allow HTTP: ${ALLOW_HTTP}"
 echo "========================="
+
+# ── Select nginx config based on ALLOW_HTTP ──
+if [ "$ALLOW_HTTP" = "true" ]; then
+    cp /etc/nginx/nginx-allow-http.conf /etc/nginx/nginx.conf
+    echo "nginx: plain HTTP enabled on :80"
+else
+    cp /etc/nginx/nginx-redirect.conf /etc/nginx/nginx.conf
+    echo "nginx: HTTP :80 redirects to HTTPS"
+fi
 
 # ── Start nginx TLS proxy ──
 nginx

@@ -14,7 +14,8 @@ RUN apt-get update && \
     mkdir -p /etc/nginx/ssl && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
-COPY nginx.conf /etc/nginx/nginx.conf
+COPY nginx-redirect.conf /etc/nginx/nginx-redirect.conf
+COPY nginx-allow-http.conf /etc/nginx/nginx-allow-http.conf
 COPY --chmod=0755 run.sh /run.sh
 
 EXPOSE 80 443
