@@ -1,6 +1,6 @@
 FROM runpod/pytorch:1.0.2-cu1281-torch280-ubuntu2404
 
-ENV LLAMA_CACHE="/workspace/unsloth/GLM-5-GGUF"
+ENV LLAMA_CACHE="/workspace/models"
 ENV TOOLS_ENABLED=false
 
 # Build llama.cpp with CUDA support, install nginx & generate self-signed cert

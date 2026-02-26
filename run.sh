@@ -2,6 +2,9 @@
 set -e
 
 ALLOW_HTTP="${ALLOW_HTTP:-false}"
+HF_MODEL="${HF_MODEL:-}"
+MODEL_PATH="${MODEL_PATH:-}"
+MODEL_ALIAS="${MODEL_ALIAS:-}"
 SSL_DIR="/etc/nginx/ssl"
 SSL_CERT_PATH="${SSL_DIR}/server.crt"
 SSL_KEY_PATH="${SSL_DIR}/server.key"
@@ -31,7 +34,6 @@ chmod 600 "$SSL_KEY_PATH"
 chmod 644 "$SSL_CERT_PATH"
 
 # ── Configuration (all overridable via environment variables) ──
-QUANT="${QUANT:-UD-IQ2_XXS}"
 CTX_SIZE="${CTX_SIZE:-202752}"
 MIN_P="${MIN_P:-0.01}"
 PORT="${PORT:-8001}"
@@ -60,8 +62,22 @@ if [ -n "$API_KEY" ]; then
     EXTRA_ARGS="--api-key ${API_KEY}"
 fi
 
-echo "===== GLM-5 RunPod ====="
-echo "  Quant:      ${QUANT}"
+# ── Resolve model source ──
+if [ -n "$MODEL_PATH" ]; then
+    MODEL_SRC="--model ${MODEL_PATH}"
+    MODEL_ALIAS="${MODEL_ALIAS:-$(basename "$MODEL_PATH" .gguf)}"
+elif [ -n "$HF_MODEL" ]; then
+    MODEL_SRC="-hf ${HF_MODEL}"
+    MODEL_ALIAS="${MODEL_ALIAS:-${HF_MODEL%%:*}}"
+else
+    QUANT="${QUANT:-UD-IQ2_XXS}"
+    MODEL_SRC="-hf unsloth/GLM-5-GGUF:${QUANT}"
+    MODEL_ALIAS="${MODEL_ALIAS:-unsloth/GLM-5}"
+fi
+
+echo "===== llama-server RunPod ====="
+echo "  Model:      ${MODEL_SRC}"
+echo "  Alias:      ${MODEL_ALIAS}"
 echo "  Context:    ${CTX_SIZE}"
 echo "  Temp:       ${TEMP}"
 echo "  Top-P:      ${TOP_P}"
@@ -71,7 +87,7 @@ echo "  Port:       ${PORT}"
 echo "  Threads:    ${THREADS}"
 echo "  Tools:      ${TOOLS_ENABLED:-false}"
 echo "  Allow HTTP: ${ALLOW_HTTP}"
-echo "========================="
+echo "================================"
 
 # ── Select nginx config based on ALLOW_HTTP ──
 if [ "$ALLOW_HTTP" = "true" ]; then
@@ -86,10 +102,10 @@ fi
 nginx
 echo "nginx started on :443"
 
-# ── Start llama-server (downloads the model automatically via -hf) ──
+# ── Start llama-server ──
 exec ./llama.cpp/llama-server \
-    -hf "unsloth/GLM-5-GGUF:${QUANT}" \
-    --alias "unsloth/GLM-5" \
+    $MODEL_SRC \
+    --alias "$MODEL_ALIAS" \
     --host 127.0.0.1 \
     --port "$PORT" \
     --prio 3 \

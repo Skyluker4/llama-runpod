@@ -1,31 +1,70 @@
-# GLM-5 RunPod
+# llama-server RunPod
 
-Deploy [GLM-5](https://unsloth.ai/docs/models/glm-5) on [RunPod](https://www.runpod.io/) using [llama.cpp](https://github.com/ggml-org/llama.cpp) with an OpenAI-compatible API served over HTTPS.
+Deploy GGUF models on [RunPod](https://www.runpod.io/) using [llama.cpp](https://github.com/ggml-org/llama.cpp) with an OpenAI-compatible API served over HTTPS.
 
-GLM-5 is Z.ai's latest reasoning model (744B parameters, 40B active) with a 200K context window. This container serves [Unsloth Dynamic 2.0 GGUFs](https://huggingface.co/unsloth/GLM-5-GGUF) via `llama-server` behind an nginx TLS reverse proxy.
+Defaults to [GLM-5](https://unsloth.ai/docs/models/glm-5) by Z.ai (744B parameters, 40B active, 200K context window) via [Unsloth Dynamic 2.0 GGUFs](https://huggingface.co/unsloth/GLM-5-GGUF), but any GGUF model on Hugging Face or on disk can be used.
 
 ## Architecture
 
 ```
 Client ──HTTPS:443──▶ nginx (TLS termination) ──HTTP:8001──▶ llama-server
                       │
-               HTTP:80 → 301 redirect to HTTPS
+               HTTP:80 → 301 redirect to HTTPS (or proxy, if ALLOW_HTTP=true)
 ```
 
 - **nginx** terminates TLS (Mozilla modern config, TLS 1.3 only) and proxies to llama-server
 - **llama-server** serves an OpenAI-compatible API on `localhost:8001` (not exposed externally)
-- The model is downloaded automatically on first startup via llama.cpp's built-in `-hf` flag
+- HF models are downloaded automatically on first startup via llama.cpp's built-in `-hf` flag
+
+## Quick Start
+
+### Default (GLM-5)
+
+```
+docker build -t llama-runpod .
+docker run --gpus all -p 443:443 llama-runpod
+```
+
+### Any Hugging Face GGUF
+
+```sh
+docker run --gpus all -p 443:443 \
+  -e HF_MODEL="bartowski/Qwen3-32B-GGUF:Q4_K_M" \
+  -e CTX_SIZE=40960 \
+  llama-runpod
+```
+
+### Local model file
+
+```sh
+docker run --gpus all -p 443:443 \
+  -v /path/to/models:/models \
+  -e MODEL_PATH="/models/my-model.gguf" \
+  llama-runpod
+```
+
+On first launch with an HF model, the weights are downloaded and cached to `/workspace/models`. Attach a persistent volume there to avoid re-downloading.
 
 ## Environment Variables
 
-### Model & Inference
+### Model Source
+
+The model is resolved in this order of priority:
 
 | Variable | Default | Description |
 |---|---|---|
-| `QUANT` | `UD-IQ2_XXS` | Quantization variant from [unsloth/GLM-5-GGUF](https://huggingface.co/unsloth/GLM-5-GGUF) |
-| `CTX_SIZE` | `202752` | Maximum context window (model max is 202,752) |
+| `MODEL_PATH` | *(unset)* | Path to a local GGUF file — used as `--model` |
+| `HF_MODEL` | *(unset)* | Hugging Face `repo:quant` string — used as `-hf` |
+| `QUANT` | `UD-IQ2_XXS` | Quantization variant (only used when neither `MODEL_PATH` nor `HF_MODEL` is set, defaults to `unsloth/GLM-5-GGUF:<QUANT>`) |
+| `MODEL_ALIAS` | *(auto)* | OpenAI-compatible model name returned in API responses. Auto-derived from the model source if unset |
+
+### Inference
+
+| Variable | Default | Description |
+|---|---|---|
+| `CTX_SIZE` | `202752` | Maximum context window |
 | `GPU_LAYERS` | `99` | Number of layers offloaded to GPU (99 = all) |
-| `THREADS` | auto (`nproc`) | CPU threads for inference |
+| `THREADS` | auto (`nproc`) | CPU threads |
 | `PORT` | `8001` | Internal llama-server port |
 
 ### Sampling
@@ -42,10 +81,17 @@ Client ──HTTPS:443──▶ nginx (TLS termination) ──HTTP:8001──▶
 | Variable | Default | Description |
 |---|---|---|
 | `API_KEY` | *(unset)* | If set, llama-server requires this as a Bearer token |
+| `GENERATE_API_KEY` | `false` | When `true` and `API_KEY` is unset, generates a random 48-character key at startup and prints it to stdout |
 | `SSL_CERT` | *(unset)* | Inline PEM certificate content |
 | `SSL_KEY` | *(unset)* | Inline PEM private key content |
 | `SSL_CERT_FILE` | *(unset)* | Path to a certificate file |
 | `SSL_KEY_FILE` | *(unset)* | Path to a private key file |
+
+### Networking
+
+| Variable | Default | Description |
+|---|---|---|
+| `ALLOW_HTTP` | `false` | When `true`, port 80 proxies traffic directly instead of redirecting to HTTPS |
 
 ### TLS Certificate Priority
 
@@ -80,17 +126,24 @@ print(completion.choices[0].message.content)
 
 ### With curl
 
-```
+```sh
 curl -k https://localhost/v1/chat/completions \
+  -H "X-API-KEY: $API_KEY" \
   -H "Content-Type: application/json" \
-  -H "Authorization: Bearer your-api-key" \
   -d '{
     "model": "unsloth/GLM-5",
     "messages": [{"role": "user", "content": "Hello!"}]
   }'
 ```
 
-## Recommended Settings
+### With message.sh
+
+```sh
+./message.sh 443 "Hello!"
+./message.sh 443 "Create a Snake game."
+```
+
+## GLM-5 Recommended Settings
 
 From the [official docs](https://unsloth.ai/docs/models/glm-5):
 
@@ -113,10 +166,12 @@ The container includes a Docker `HEALTHCHECK` that polls llama-server's `/health
 | File | Purpose |
 |---|---|
 | `Dockerfile` | Builds llama.cpp with CUDA, installs nginx + openssl |
-| `run.sh` | Provisions TLS cert, starts nginx, launches llama-server |
-| `nginx.conf` | Mozilla modern TLS config, HTTP→HTTPS redirect, reverse proxy |
+| `run.sh` | Provisions TLS cert, resolves model source, starts nginx, launches llama-server |
+| `nginx-redirect.conf` | Mozilla modern TLS config, HTTP→HTTPS redirect, reverse proxy |
+| `nginx-allow-http.conf` | Same as above but serves HTTP traffic directly on port 80 |
+| `message.sh` | Quick curl helper — takes port and message as arguments |
 
-## Memory Requirements
+## GLM-5 Memory Requirements
 
 | Quantization | Disk Size | Minimum Memory (VRAM + RAM) |
 |---|---|---|
@@ -129,4 +184,4 @@ Total available memory (VRAM + system RAM) should exceed the model file size. ll
 
 ## License
 
-Model weights are subject to Z.ai's license terms. See [unsloth/GLM-5-GGUF](https://huggingface.co/unsloth/GLM-5-GGUF) for details.
+Model weights are subject to their respective license terms. See [unsloth/GLM-5-GGUF](https://huggingface.co/unsloth/GLM-5-GGUF) for GLM-5 details.
