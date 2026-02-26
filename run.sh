@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 set -e
 
 ALLOW_HTTP="${ALLOW_HTTP:-false}"
