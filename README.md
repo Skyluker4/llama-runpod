@@ -82,8 +82,8 @@ The model is resolved in this order of priority:
 |---|---|---|
 | `API_KEY` | *(unset)* | If set, llama-server requires this as a Bearer token |
 | `GENERATE_API_KEY` | `false` | When `true` and `API_KEY` is unset, generates a random 48-character key at startup and prints it to stdout |
-| `SSL_CERT` | *(unset)* | Inline PEM certificate content |
-| `SSL_KEY` | *(unset)* | Inline PEM private key content |
+| `SSL_CERT` | *(unset)* | Base64-encoded PEM certificate (`base64 -w0 < server.crt`) |
+| `SSL_KEY` | *(unset)* | Base64-encoded PEM private key (`base64 -w0 < server.key`) |
 | `SSL_CERT_FILE` | *(unset)* | Path to a certificate file |
 | `SSL_KEY_FILE` | *(unset)* | Path to a private key file |
 
@@ -95,7 +95,7 @@ The model is resolved in this order of priority:
 
 ### TLS Certificate Priority
 
-1. **`SSL_CERT` + `SSL_KEY`** — PEM content written to disk from env vars
+1. **`SSL_CERT` + `SSL_KEY`** — base64-decoded and written to disk from env vars
 2. **`SSL_CERT_FILE` + `SSL_KEY_FILE`** — existing files copied into place
 3. **Fallback** — a self-signed certificate (RSA 4096, 10-year expiry) is generated at startup and the public certificate is printed to stdout
 

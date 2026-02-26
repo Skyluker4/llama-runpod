@@ -13,9 +13,9 @@ SSL_KEY_PATH="${SSL_DIR}/server.key"
 mkdir -p "$SSL_DIR"
 
 if [ -n "$SSL_CERT" ] && [ -n "$SSL_KEY" ]; then
-    echo "Using SSL cert/key from environment variables"
-    echo "$SSL_CERT" > "$SSL_CERT_PATH"
-    echo "$SSL_KEY" > "$SSL_KEY_PATH"
+    echo "Using SSL cert/key from environment variables (base64)"
+    printf '%s' "$SSL_CERT" | base64 -d > "$SSL_CERT_PATH"
+    printf '%s' "$SSL_KEY" | base64 -d > "$SSL_KEY_PATH"
 elif [ -n "$SSL_CERT_FILE" ] && [ -n "$SSL_KEY_FILE" ] && [ -f "$SSL_CERT_FILE" ] && [ -f "$SSL_KEY_FILE" ]; then
     echo "Using SSL cert/key from files: ${SSL_CERT_FILE}, ${SSL_KEY_FILE}"
     cp "$SSL_CERT_FILE" "$SSL_CERT_PATH"
