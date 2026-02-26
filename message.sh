@@ -39,6 +39,7 @@ shift
 MESSAGE="$*"
 
 curl -k "https://${HOST}:${PORT}/v1/chat/completions" \
+  -H "X-API-Key: $(cat key.txt)" \
   -H "Content-Type: application/json" \
   -d "{
     \"model\": \"unsloth/GLM-5\",
