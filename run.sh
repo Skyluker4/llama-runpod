@@ -22,7 +22,7 @@ elif [ -n "$SSL_CERT_FILE" ] && [ -n "$SSL_KEY_FILE" ] && [ -f "$SSL_CERT_FILE" 
     cp "$SSL_KEY_FILE" "$SSL_KEY_PATH"
 else
     echo "No SSL cert provided — generating self-signed certificate..."
-    openssl req -x509 -nodes -days 3650 -newkey rsa:4096 \
+    openssl req -x509 -nodes -days 90 -newkey rsa:4096 \
         -keyout "$SSL_KEY_PATH" \
         -out "$SSL_CERT_PATH" \
         -subj "/CN=llama-runpod" 2>/dev/null
