@@ -10,6 +10,7 @@ shift
 MESSAGE="$*"
 
 curl -k "https://glm5-runpod:${PORT}/v1/chat/completions" \
+  -H "X-API-Key: $(cat key.txt)" \
   -H "Content-Type: application/json" \
   -d "{
     \"model\": \"unsloth/GLM-5\",
