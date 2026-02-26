@@ -184,4 +184,6 @@ Total available memory (VRAM + system RAM) should exceed the model file size. ll
 
 ## License
 
+This project is licensed under the [GNU Affero General Public License v3.0 only (AGPL-3.0-only)](LICENSE).
+
 Model weights are subject to their respective license terms. See [unsloth/GLM-5-GGUF](https://huggingface.co/unsloth/GLM-5-GGUF) for GLM-5 details.
