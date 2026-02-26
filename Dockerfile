@@ -1,8 +1,5 @@
 FROM runpod/pytorch:1.0.2-cu1281-torch280-ubuntu2404
 
-ENV LLAMA_CACHE="/workspace/models"
-ENV TOOLS_ENABLED=false
-
 # Build llama.cpp with CUDA support, install nginx & generate self-signed cert
 RUN apt-get update && \
     apt-get install -y pciutils build-essential cmake curl libcurl4-openssl-dev nginx openssl && \
@@ -17,6 +14,9 @@ RUN apt-get update && \
 COPY nginx-redirect.conf /etc/nginx/nginx-redirect.conf
 COPY nginx-allow-http.conf /etc/nginx/nginx-allow-http.conf
 COPY --chmod=0755 run.sh /run.sh
+
+ENV LLAMA_CACHE="/workspace/models"
+ENV TOOLS_ENABLED=false
 
 EXPOSE 80 443
 
