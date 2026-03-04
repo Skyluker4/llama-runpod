@@ -1,5 +1,9 @@
 # llama-server RunPod
 
+[![Deploy on RunPod](https://www.runpod.io/console/deploy-badge.svg)](https://console.runpod.io/deploy?template=9971n7l71b&ref=23r2887x)
+[![Docker Hub](https://img.shields.io/docker/v/skyluker4/llama-runpod?sort=semver&logo=docker&label=Docker%20Hub)](https://hub.docker.com/r/skyluker4/llama-runpod)
+[![GHCR](https://img.shields.io/badge/GHCR-skyluker4%2Fllama--runpod-blue?logo=github)](https://ghcr.io/skyluker4/llama-runpod)
+
 Deploy GGUF models on [RunPod](https://www.runpod.io/) using [llama.cpp](https://github.com/ggml-org/llama.cpp) with an OpenAI-compatible API served over HTTPS.
 
 Defaults to [GLM-5](https://unsloth.ai/docs/models/glm-5) by Z.ai (744B parameters, 40B active, 200K context window) via [Unsloth Dynamic 2.0 GGUFs](https://huggingface.co/unsloth/GLM-5-GGUF), but any GGUF model on Hugging Face or on disk can be used.
