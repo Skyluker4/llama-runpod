@@ -1,4 +1,4 @@
-FROM runpod/pytorch:1.0.2-cu1281-torch280-ubuntu2404
+FROM runpod/pytorch:1.0.3-cu1281-torch280-ubuntu2404
 
 # Build llama.cpp with CUDA support, install nginx & generate self-signed cert
 RUN apt-get update && \
