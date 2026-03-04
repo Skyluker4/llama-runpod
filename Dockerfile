@@ -15,7 +15,11 @@ RUN apt-get update && \
         pciutils=1:3.10.0-2build1 && \
     git clone --branch b8140 --single-branch https://github.com/ggml-org/llama.cpp && \
     cmake llama.cpp -B llama.cpp/build -DBUILD_SHARED_LIBS=OFF -DGGML_CUDA=ON && \
-    cmake --build llama.cpp/build --config Release "-j${BUILD_JOBS}" --clean-first --target llama-cli llama-mtmd-cli llama-server llama-gguf-split && \
+    cmake --build llama.cpp/build --config Release "-j${BUILD_JOBS}" --clean-first \
+        --target llama-cli \
+        --target llama-mtmd-cli \
+        --target llama-server \
+        --target llama-gguf-split && \
     cp llama.cpp/build/bin/llama-* llama.cpp && \
     rm -rf llama.cpp/build && \
     mkdir -p /etc/nginx/ssl && \
