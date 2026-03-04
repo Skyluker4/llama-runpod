@@ -6,7 +6,7 @@ Defaults to [GLM-5](https://unsloth.ai/docs/models/glm-5) by Z.ai (744B paramete
 
 ## Architecture
 
-```
+```text
 Client ──HTTPS:443──▶ nginx (TLS termination) ──HTTP:8001──▶ llama-server
                       │
                HTTP:80 → 301 redirect to HTTPS (or proxy, if ALLOW_HTTP=true)
@@ -20,7 +20,7 @@ Client ──HTTPS:443──▶ nginx (TLS termination) ──HTTP:8001──▶
 
 ### Default (GLM-5)
 
-```
+```sh
 docker build -t llama-runpod .
 docker run --gpus all -p 443:443 llama-runpod
 ```
@@ -51,46 +51,46 @@ On first launch with an HF model, the weights are downloaded and cached to `/wor
 
 The model is resolved in this order of priority:
 
-| Variable | Default | Description |
-|---|---|---|
-| `MODEL_PATH` | *(unset)* | Path to a local GGUF file — used as `--model` |
-| `HF_MODEL` | *(unset)* | Hugging Face `repo:quant` string — used as `-hf` |
-| `QUANT` | `UD-IQ2_XXS` | Quantization variant (only used when neither `MODEL_PATH` nor `HF_MODEL` is set, defaults to `unsloth/GLM-5-GGUF:<QUANT>`) |
-| `MODEL_ALIAS` | *(auto)* | OpenAI-compatible model name returned in API responses. Auto-derived from the model source if unset |
+| Variable      | Default      | Description                                                                                                                |
+| ------------- | ------------ | -------------------------------------------------------------------------------------------------------------------------- |
+| `MODEL_PATH`  | _(unset)_    | Path to a local GGUF file — used as `--model`                                                                              |
+| `HF_MODEL`    | _(unset)_    | Hugging Face `repo:quant` string — used as `-hf`                                                                           |
+| `QUANT`       | `UD-IQ2_XXS` | Quantization variant (only used when neither `MODEL_PATH` nor `HF_MODEL` is set, defaults to `unsloth/GLM-5-GGUF:<QUANT>`) |
+| `MODEL_ALIAS` | _(auto)_     | OpenAI-compatible model name returned in API responses. Auto-derived from the model source if unset                        |
 
 ### Inference
 
-| Variable | Default | Description |
-|---|---|---|
-| `CTX_SIZE` | `202752` | Maximum context window |
-| `GPU_LAYERS` | `99` | Number of layers offloaded to GPU (99 = all) |
-| `THREADS` | auto (`nproc`) | CPU threads |
-| `PORT` | `8001` | Internal llama-server port |
+| Variable     | Default        | Description                                  |
+| ------------ | -------------- | -------------------------------------------- |
+| `CTX_SIZE`   | `202752`       | Maximum context window                       |
+| `GPU_LAYERS` | `99`           | Number of layers offloaded to GPU (99 = all) |
+| `THREADS`    | auto (`nproc`) | CPU threads                                  |
+| `PORT`       | `8001`         | Internal llama-server port                   |
 
 ### Sampling
 
-| Variable | Default | Description |
-|---|---|---|
-| `TOOLS_ENABLED` | `false` | When `true`, uses temp=1.0 / top_p=0.95 (tool-calling preset). When `false`, uses temp=0.7 / top_p=1.0 (general preset) |
-| `TEMP` | per mode | Override temperature directly |
-| `TOP_P` | per mode | Override top-p directly |
-| `MIN_P` | `0.01` | Minimum probability threshold |
+| Variable        | Default  | Description                                                                                                             |
+| --------------- | -------- | ----------------------------------------------------------------------------------------------------------------------- |
+| `TOOLS_ENABLED` | `false`  | When `true`, uses temp=1.0 / top_p=0.95 (tool-calling preset). When `false`, uses temp=0.7 / top_p=1.0 (general preset) |
+| `TEMP`          | per mode | Override temperature directly                                                                                           |
+| `TOP_P`         | per mode | Override top-p directly                                                                                                 |
+| `MIN_P`         | `0.01`   | Minimum probability threshold                                                                                           |
 
 ### Security
 
-| Variable | Default | Description |
-|---|---|---|
-| `API_KEY` | *(unset)* | If set, llama-server requires this as a Bearer token |
-| `GENERATE_API_KEY` | `false` | When `true` and `API_KEY` is unset, generates a random 48-character key at startup and prints it to stdout |
-| `SSL_CERT` | *(unset)* | Base64-encoded PEM certificate (`base64 -w0 < server.crt`) |
-| `SSL_KEY` | *(unset)* | Base64-encoded PEM private key (`base64 -w0 < server.key`) |
-| `SSL_CERT_FILE` | *(unset)* | Path to a certificate file |
-| `SSL_KEY_FILE` | *(unset)* | Path to a private key file |
+| Variable           | Default   | Description                                                                                                |
+| ------------------ | --------- | ---------------------------------------------------------------------------------------------------------- |
+| `API_KEY`          | _(unset)_ | If set, llama-server requires this as a Bearer token                                                       |
+| `GENERATE_API_KEY` | `false`   | When `true` and `API_KEY` is unset, generates a random 48-character key at startup and prints it to stdout |
+| `SSL_CERT`         | _(unset)_ | Base64-encoded PEM certificate (`base64 -w0 < server.crt`)                                                 |
+| `SSL_KEY`          | _(unset)_ | Base64-encoded PEM private key (`base64 -w0 < server.key`)                                                 |
+| `SSL_CERT_FILE`    | _(unset)_ | Path to a certificate file                                                                                 |
+| `SSL_KEY_FILE`     | _(unset)_ | Path to a private key file                                                                                 |
 
 ### Networking
 
-| Variable | Default | Description |
-|---|---|---|
+| Variable     | Default | Description                                                                   |
+| ------------ | ------- | ----------------------------------------------------------------------------- |
 | `ALLOW_HTTP` | `false` | When `true`, port 80 proxies traffic directly instead of redirecting to HTTPS |
 
 ### TLS Certificate Priority
@@ -103,7 +103,7 @@ The model is resolved in this order of priority:
 
 ### With the OpenAI Python client
 
-```
+```sh
 pip install openai
 ```
 
@@ -124,7 +124,7 @@ print(completion.choices[0].message.content)
 
 > If using the self-signed certificate, pass `http_client` with `verify=False` or point `SSL_CERT_FILE` at the printed certificate.
 
-### With curl
+### With cURL
 
 ```sh
 curl -k https://localhost/v1/chat/completions \
@@ -147,10 +147,10 @@ curl -k https://localhost/v1/chat/completions \
 
 From the [official docs](https://unsloth.ai/docs/models/glm-5):
 
-| Use Case | Temperature | Top-P | Min-P | Max Tokens |
-|---|---|---|---|---|
-| General (default) | 0.7 | 1.0 | 0.01 | 131072 |
-| SWE Bench / Tool Calling | 1.0 | 0.95 | 0.01 | 16384 |
+| Use Case                 | Temperature | Top-P | Min-P | Max Tokens |
+| ------------------------ | ----------- | ----- | ----- | ---------- |
+| General (default)        | 0.7         | 1.0   | 0.01  | 131072     |
+| SWE Bench / Tool Calling | 1.0         | 0.95  | 0.01  | 16384      |
 
 ## Health Check
 
@@ -163,22 +163,22 @@ The container includes a Docker `HEALTHCHECK` that polls llama-server's `/health
 
 ## Files
 
-| File | Purpose |
-|---|---|
-| `Dockerfile` | Builds llama.cpp with CUDA, installs nginx + openssl |
-| `run.sh` | Provisions TLS cert, resolves model source, starts nginx, launches llama-server |
-| `nginx-redirect.conf` | Mozilla modern TLS config, HTTP→HTTPS redirect, reverse proxy |
-| `nginx-allow-http.conf` | Same as above but serves HTTP traffic directly on port 80 |
-| `message.sh` | Quick curl helper — takes port and message as arguments |
+| File                    | Purpose                                                                         |
+| ----------------------- | ------------------------------------------------------------------------------- |
+| `Dockerfile`            | Builds llama.cpp with CUDA, installs nginx + OpenSSL                            |
+| `run.sh`                | Provisions TLS cert, resolves model source, starts nginx, launches llama-server |
+| `nginx-redirect.conf`   | Mozilla modern TLS config, HTTP→HTTPS redirect, reverse proxy                   |
+| `nginx-allow-http.conf` | Same as above but serves HTTP traffic directly on port 80                       |
+| `message.sh`            | Quick cURL helper — takes port and message as arguments                         |
 
 ## GLM-5 Memory Requirements
 
-| Quantization | Disk Size | Minimum Memory (VRAM + RAM) |
-|---|---|---|
-| `UD-TQ1_0` (1-bit) | 176 GB | ~180 GB |
-| `UD-IQ2_XXS` (2-bit) | 241 GB | ~256 GB |
-| `UD-Q4_K_XL` (4-bit) | ~400 GB | ~420 GB |
-| `UD-Q8_0` (8-bit) | ~805 GB | ~820 GB |
+| Quantization         | Disk Size | Minimum Memory (VRAM + RAM) |
+| -------------------- | --------- | --------------------------- |
+| `UD-TQ1_0` (1-bit)   | 176 GB    | ~180 GB                     |
+| `UD-IQ2_XXS` (2-bit) | 241 GB    | ~256 GB                     |
+| `UD-Q4_K_XL` (4-bit) | ~400 GB   | ~420 GB                     |
+| `UD-Q8_0` (8-bit)    | ~805 GB   | ~820 GB                     |
 
 Total available memory (VRAM + system RAM) should exceed the model file size. llama.cpp can fall back to disk offloading if it doesn't, but inference will be slower.
 
