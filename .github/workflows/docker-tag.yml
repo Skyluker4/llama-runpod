@@ -52,6 +52,39 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Compute version aliases
+        id: aliases
+        run: |
+          TAG="${GITHUB_REF#refs/tags/}"
+          TAGS=""
+
+          # Strip leading 'v' for parsing, keep it in output
+          VER="${TAG#v}"
+          PREFIX=""
+          if [[ "$TAG" == v* ]]; then
+            PREFIX="v"
+          fi
+
+          IFS='.' read -ra PARTS <<< "$VER"
+
+          # v3.0.0 -> add v3.0 and v3
+          if [[ ${#PARTS[@]} -ge 3 ]]; then
+            MINOR="${PREFIX}${PARTS[0]}.${PARTS[1]}"
+            MAJOR="${PREFIX}${PARTS[0]}"
+            TAGS="type=raw,value=${MINOR}
+          type=raw,value=${MAJOR}"
+          # v3.0 -> add v3
+          elif [[ ${#PARTS[@]} -ge 2 ]]; then
+            MAJOR="${PREFIX}${PARTS[0]}"
+            TAGS="type=raw,value=${MAJOR}"
+          fi
+
+          {
+            echo "tags<<EOF"
+            echo "$TAGS"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
       - name: Extract metadata
         id: meta
         uses: docker/metadata-action@c299e40c65443455700f0fdfc63efafe5b349051 # v5.10.0
@@ -61,8 +94,7 @@ jobs:
             ghcr.io/${{ github.repository }}
           tags: |
             type=ref,event=tag
-            type=semver,pattern=v{{major}}.{{minor}}
-            type=semver,pattern=v{{major}}
+            ${{ steps.aliases.outputs.tags }}
             type=raw,value=latest,enable=${{ startsWith(github.ref, 'refs/tags/v') && steps.check_main.outputs.on_main == 'true' }}
 
       - name: Build and push
