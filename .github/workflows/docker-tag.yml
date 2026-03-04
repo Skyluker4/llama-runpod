@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-24.04
 
     permissions:
-      contents: read
+      contents: write
       attestations: write
       id-token: write
       packages: write
@@ -109,3 +109,30 @@ jobs:
           cache-to: type=gha,mode=max
           provenance: true
           sbom: true
+
+      - name: Update alias git tags
+        if: steps.aliases.outputs.tags != ''
+        run: |
+          TAG="${GITHUB_REF#refs/tags/}"
+          VER="${TAG#v}"
+          PREFIX=""
+          if [[ "$TAG" == v* ]]; then
+            PREFIX="v"
+          fi
+
+          IFS='.' read -ra PARTS <<< "$VER"
+
+          ALIAS_TAGS=()
+          if [[ ${#PARTS[@]} -ge 3 ]]; then
+            ALIAS_TAGS+=("${PREFIX}${PARTS[0]}.${PARTS[1]}" "${PREFIX}${PARTS[0]}")
+          elif [[ ${#PARTS[@]} -ge 2 ]]; then
+            ALIAS_TAGS+=("${PREFIX}${PARTS[0]}")
+          fi
+
+          REMOTE="https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}.git"
+          for ALIAS in "${ALIAS_TAGS[@]}"; do
+            git tag -f "$ALIAS" "${{ github.sha }}"
+            git push -f "$REMOTE" "refs/tags/$ALIAS"
+          done
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
