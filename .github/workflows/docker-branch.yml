@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-24.04
 
     permissions:
-      contents: read
+      contents: write
       attestations: write
       id-token: write
       packages: write
@@ -96,3 +96,13 @@ jobs:
           cache-to: type=gha,mode=max
           provenance: true
           sbom: true
+
+      - name: Create development release
+        if: github.ref == 'refs/heads/main' && steps.push.outputs.can_push == 'true'
+        uses: softprops/action-gh-release@a06a81a03ee405af7f2048a818ed3f03bbf83c7b # v2.5.0
+        with:
+          tag_name: dev
+          name: Development Build
+          prerelease: true
+          generate_release_notes: true
+          make_latest: false
