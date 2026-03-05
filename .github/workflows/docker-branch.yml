@@ -64,6 +64,14 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Log in to Quay.io
+        if: steps.push.outputs.can_push == 'true'
+        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3.7.0
+        with:
+          registry: quay.io
+          username: ${{ secrets.QUAY_USERNAME }}
+          password: ${{ secrets.QUAY_TOKEN }}
+
       - name: Extract metadata
         if: steps.push.outputs.can_push == 'true'
         id: meta
@@ -72,6 +80,7 @@ jobs:
           images: |
             ${{ env.IMAGE_NAME }}
             ghcr.io/${{ github.repository }}
+            quay.io/${{ github.repository_owner }}/llama-runpod
           tags: |
             type=ref,event=branch
 
