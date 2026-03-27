@@ -7,9 +7,9 @@ RUN apt-get update && \
     apt-get install -y --no-install-recommends \
         build-essential=12.10ubuntu1 \
         cmake=3.28.3-1build7 \
-        curl=8.5.0-2ubuntu10.7 \
+        curl=8.5.0-2ubuntu10.8 \
         libcap2-bin=1:2.66-5ubuntu2.2 \
-        libcurl4-openssl-dev=8.5.0-2ubuntu10.7 \
+        libcurl4-openssl-dev=8.5.0-2ubuntu10.8 \
         nginx=1.24.0-2ubuntu7.6 \
         openssl=3.0.13-0ubuntu3.7 \
         pciutils=1:3.10.0-2build1 && \

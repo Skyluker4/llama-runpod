@@ -191,4 +191,6 @@ Total available memory (VRAM + system RAM) should exceed the model file size. ll
 
 This project is licensed under the [GNU Affero General Public License v3.0 only (AGPL-3.0-only)](LICENSE).
 
+As per section 14 of the AGPL, Luke Andrew Simmons is the designated proxy who can decide whether future published versions of the GNU Affero General Public License can be applied to this program.
+
 Model weights are subject to their respective license terms. See [unsloth/GLM-5-GGUF](https://huggingface.co/unsloth/GLM-5-GGUF) for GLM-5 details.
